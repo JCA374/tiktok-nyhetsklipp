@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>TikTok-videor</title>
+<style>
+:root{
+  --bg:#f6f5f2; --surface:#ffffff; --text:#1c1b19; --muted:#66625b; --line:#e3e0da;
+  --accent:#d6204e; --accent-ink:#ffffff; --chip:#ecebe6; --shadow:0 1px 2px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141413; --surface:#1f1e1c; --text:#f1efe9; --muted:#a19d95; --line:#33312d;
+    --accent:#ff4d74; --accent-ink:#141413; --chip:#2a2926; --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141413; --surface:#1f1e1c; --text:#f1efe9; --muted:#a19d95; --line:#33312d;
+  --accent:#ff4d74; --accent-ink:#141413; --chip:#2a2926; --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 64px}
+header h1{font-size:clamp(24px,4vw,34px);margin:0 0 4px;letter-spacing:-.01em}
+header p{margin:0;color:var(--muted)}
+.note{display:inline-flex;gap:6px;align-items:center;margin-top:10px;font-size:13px;color:var(--muted);
+  background:var(--chip);padding:4px 10px;border-radius:999px}
+.filters{position:sticky;top:0;z-index:5;background:var(--bg);padding:14px 0;margin:18px 0 8px;
+  border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.filters .lbl{font-size:13px;color:var(--muted);margin-right:4px}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;
+  padding:6px 12px;font:inherit;font-size:14px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.chip .n{font-size:12px;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip[aria-pressed="true"] .n{color:inherit;opacity:.8}
+.chip.ghost{background:transparent;border-color:transparent;color:var(--muted);text-decoration:underline}
+section.group{margin-top:28px}
+section.group[hidden]{display:none}
+.group h2{font-size:20px;margin:0 0 12px;display:flex;align-items:baseline;gap:10px}
+.group h2 small{font-size:13px;font-weight:400;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}
+.card{background:var(--surface);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;border:1px solid var(--line)}
+.thumb{position:relative;aspect-ratio:9/16;background:var(--chip);border:0;padding:0;cursor:pointer;display:block;width:100%}
+.thumb img{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover;display:block}
+.thumb img{opacity:0;transition:opacity .25s}.thumb img.ok{opacity:1}
+.thumb .ph{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-weight:600;padding:12px;text-align:center}
+.thumb .play{position:absolute;z-index:2;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;
+  background:rgba(0,0,0,.55);display:grid;place-items:center;transition:transform .15s}
+.thumb:hover .play,.thumb:focus-visible .play{transform:scale(1.1);background:var(--accent)}
+.thumb .play::after{content:"";border-left:16px solid #fff;border-top:10px solid transparent;border-bottom:10px solid transparent;margin-left:4px}
+.meta{padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px;flex:1}
+.meta h3{font-size:15px;margin:0;line-height:1.3;hyphens:auto;overflow-wrap:anywhere}
+.meta p{font-size:13px;color:var(--muted);margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.meta a{margin-top:auto;font-size:13px;color:var(--accent);text-decoration:none;font-weight:600}
+.meta a:hover{text-decoration:underline}
+.empty{color:var(--muted);padding:40px 0;text-align:center}
+dialog{border:0;padding:0;background:transparent;max-width:100vw;max-height:100vh}
+dialog::backdrop{background:rgba(0,0,0,.75)}
+.modal{background:var(--surface);color:var(--text);border-radius:14px;overflow:hidden;
+  width:min(420px,calc(100vw - 32px));display:flex;flex-direction:column;max-height:calc(100vh - 32px)}
+.player{position:relative;aspect-ratio:9/16;max-height:calc(100vh - 170px);background:#000;width:100%}
+.player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.mbar{padding:12px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between}
+.mbar h3{margin:0;font-size:15px}
+.mbar small{color:var(--muted);display:block;font-size:12px}
+.btn{background:var(--accent);color:var(--accent-ink);text-decoration:none;padding:8px 12px;border-radius:8px;
+  font-weight:600;font-size:14px;white-space:nowrap}
+.close{position:absolute;top:8px;right:8px;z-index:2;width:36px;height:36px;border-radius:50%;border:0;
+  background:rgba(0,0,0,.6);color:#fff;font-size:20px;cursor:pointer}
+@media (max-width:480px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>TikTok-videor</h1>
+    <p>12 videor från 4 källor, grupperade efter källa.</p>
+    <span class="note">🌐 Internetanslutning krävs för att spela upp videorna</span>
+  </header>
+  <nav class="filters" id="filters" aria-label="Filtrera källor"><span class="lbl">Visa källor:</span></nav>
+  <main id="groups"></main>
+  <p class="empty" id="blocked" hidden>Miniatyrbilderna kunde inte hämtas från TikTok. Kontrollera internetanslutningen, eller om en annonsblockerare eller webbläsarens spårningsskydd blockerar TikTok.</p>
+  <p class="empty" id="empty" hidden>Ingen källa vald. Välj en eller flera källor ovan.</p>
+</div>
+
+<dialog id="dlg" aria-label="Videospelare">
+  <div class="modal">
+    <div class="player" id="player"><button class="close" id="close" aria-label="Stäng">✕</button></div>
+    <div class="mbar">
+      <div><h3 id="mtitle"></h3><small id="msrc"></small></div>
+      <a class="btn" id="morig" target="_blank" rel="noopener">Öppna på TikTok ↗</a>
+    </div>
+  </div>
+</dialog>
+
+<script>
+const DATA = [{"source": "SVT Nyheter", "handle": "svtnyheter", "videos": [{"id": "7690518751627791638", "url": "https://www.tiktok.com/@svtnyheter/video/7690518751627791638", "title": "Tar tillbaka sonderingsuppdraget"}, {"id": "7689869529740086550", "url": "https://www.tiktok.com/@svtnyheter/video/7689869529740086550", "title": "Anledningartill att S håller V på avstånd"}, {"id": "7688319278721944854", "url": "https://www.tiktok.com/@svtnyheter/video/7688319278721944854", "title": "Vänsterpartist anklagas för valfusk"}]}, {"source": "Expressen", "handle": "expressen", "videos": [{"id": "7690494549797408022", "url": "https://www.tiktok.com/@expressen/video/7690494549797408022", "title": "Lämnar tillbaka sonderingsuppdraget"}, {"id": "7690972720342846742", "url": "https://www.tiktok.com/@expressen/video/7690972720342846742", "title": "Räds inte extraval"}, {"id": "7690907696043789590", "url": "https://www.tiktok.com/@expressen/video/7690907696043789590", "title": "Ingen fika"}]}, {"source": "Svenska Dagbladet", "handle": "svenskadagbladet", "videos": [{"id": "7686489574888983840", "url": "https://www.tiktok.com/@svenskadagbladet/video/7686489574888983840", "title": "Kristersson avågr"}, {"id": "7690966392115383584", "url": "https://www.tiktok.com/@svenskadagbladet/video/7690966392115383584", "title": "Så klär sig partiledarna"}, {"id": "7685693484342299937", "url": "https://www.tiktok.com/@svenskadagbladet/video/7685693484342299937", "title": "Därfr tror invånarna att V ökat:"}]}, {"source": "Dagens Nyheter", "handle": "dagensnyheterdn", "videos": [{"id": "7690494566675336481", "url": "https://www.tiktok.com/@dagensnyheterdn/video/7690494566675336481", "title": "Tar tillbaka sonderingsuppdraget"}, {"id": "7691003382403779873", "url": "https://www.tiktok.com/@dagensnyheterdn/video/7691003382403779873", "title": "Hur är politikerna vid förhandlingsbordet"}, {"id": "7690586194844962080", "url": "https://www.tiktok.com/@dagensnyheterdn/video/7690586194844962080", "title": "Reaktionerna efter Anderssons besked"}]}];
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const selected = new Set(DATA.map((_, i) => i));
+
+// Filter
+const filters = $("#filters");
+DATA.forEach((g, i) => {
+  const b = document.createElement("button");
+  b.className = "chip"; b.dataset.i = i; b.setAttribute("aria-pressed", "true");
+  b.innerHTML = `${esc(g.source)} <span class="n">${g.videos.length}</span>`;
+  b.onclick = () => { selected.has(i) ? selected.delete(i) : selected.add(i); render(); };
+  filters.append(b);
+});
+for (const [label, fn] of [["Alla", () => DATA.forEach((_, i) => selected.add(i))], ["Rensa", () => selected.clear()]]) {
+  const b = document.createElement("button");
+  b.className = "chip ghost"; b.textContent = label;
+  b.onclick = () => { fn(); render(); };
+  filters.append(b);
+}
+
+// Grupper
+$("#groups").innerHTML = DATA.map((g, i) => `
+  <section class="group" data-i="${i}">
+    <h2>${esc(g.source)} <small>@${esc(g.handle)} · ${g.videos.length} videor</small></h2>
+    <div class="grid">${g.videos.map((v, j) => `
+      <article class="card">
+        <button class="thumb" data-g="${i}" data-v="${j}" aria-label="Spela: ${esc(v.title)}">
+          <span class="ph">${esc(g.source)}</span>
+          <span class="play"></span>
+        </button>
+        <div class="meta">
+          <h3>${esc(v.title || "Video")}</h3>
+          <a href="${esc(v.url)}" target="_blank" rel="noopener">Öppna på TikTok ↗</a>
+        </div>
+      </article>`).join("")}
+    </div>
+  </section>`).join("");
+
+function render() {
+  filters.querySelectorAll(".chip[data-i]").forEach(b => b.setAttribute("aria-pressed", selected.has(+b.dataset.i)));
+  document.querySelectorAll("section.group").forEach(s => s.hidden = !selected.has(+s.dataset.i));
+  $("#empty").hidden = selected.size > 0;
+}
+
+// Spelare
+const dlg = $("#dlg"), player = $("#player");
+function openVideo(g, v) {
+  const src = DATA[g], vid = src.videos[v];
+  player.querySelector("iframe")?.remove();
+  const f = document.createElement("iframe");
+  f.src = `https://www.tiktok.com/player/v1/${vid.id}?autoplay=1&rel=0&description=1`;
+  f.allow = "autoplay; fullscreen; encrypted-media; picture-in-picture";
+  f.allowFullscreen = true; f.title = vid.title;
+  player.append(f);
+  $("#mtitle").textContent = vid.title || "Video";
+  $("#msrc").textContent = src.source;
+  $("#morig").href = vid.url;
+  dlg.showModal();
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest(".thumb");
+  if (t) openVideo(+t.dataset.g, +t.dataset.v);
+});
+$("#close").onclick = () => dlg.close();
+dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
+dlg.addEventListener("close", () => player.querySelector("iframe")?.remove());
+// Miniatyrer hämtas direkt från TikTok när sidan öppnas – inga kopior i filen.
+const thumbs = [...document.querySelectorAll(".thumb")];
+let failed = 0;
+const fail = () => { if (++failed === thumbs.length) $("#blocked").hidden = false; };
+thumbs.forEach(async btn => {
+  const vid = DATA[btn.dataset.g].videos[btn.dataset.v];
+  try {
+    const r = await fetch("https://www.tiktok.com/oembed?url=" + encodeURIComponent(vid.url));
+    const meta = await r.json();
+    if (!meta.thumbnail_url) return fail();
+    // Läggs in direkt (inte lazy): Firefox laddar aldrig lazy-bilder som inte finns i sidan.
+    const img = new Image();
+    img.alt = ""; img.referrerPolicy = "no-referrer"; img.decoding = "async";
+    img.onload = () => img.classList.add("ok");
+    img.onerror = () => { img.remove(); fail(); };
+    img.src = meta.thumbnail_url;
+    btn.prepend(img);
+  } catch (e) { fail(); /* platshållaren visas */ }
+});
+render();
+</script>
+</body>
+</html>
